@@ -20,7 +20,7 @@ fields:
     required: true
     default: 'off'
 sequence:
-  - service: light.turn_{{ light_status or 'off' }}
+  - service: light.turn_{{ light_status | default("off", true) }}
     metadata: {}
     data: {}
     target:
