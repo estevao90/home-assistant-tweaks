@@ -13,12 +13,12 @@ fields:
     selector:
       select:
         options:
-          - 'on'
-          - 'off'
+          - "on"
+          - "off"
     name: Status
     description: Desired status for the target lights.
     required: true
-    default: 'off'
+    default: "off"
 sequence:
   - service: light.turn_{{ light_status | default("off", true) }}
     metadata: {}
