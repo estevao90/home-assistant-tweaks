@@ -5,7 +5,7 @@ blueprint:
   source_url: https://github.com/estevao90/home-assistant-tweaks
   author: Estevão Costa
   input:
-    presence_entity:
+    input_presence_entity:
       name: Presence Sensor
       selector:
         entity:
@@ -13,16 +13,22 @@ blueprint:
             device_class: presence
             domain: binary_sensor
     # TODO: Support multiple lights
-    light_target:
+    input_light_target:
       name: Light
       selector:
         entity:
           filter:
             domain: light
-    no_presence_wait:
+    input_lights_target:
+      name: Lights
+      selector:
+        target:
+          entity:
+            domain: light
+    input_no_presence_wait:
       name: Wait time
       description: Time to leave the light on after last presence is detected.
-      default: 180
+      default: 240
       selector:
         number:
           min: 0
@@ -31,29 +37,44 @@ blueprint:
 
 mode: single
 
+trigger_variables:
+  light_target: !input input_light_target
+  lights_target: !input input_lights_target
+  presence_entity: !input input_presence_entity
+  light_entities: >-
+    {%- set ns = namespace(entity_ids=[]) %}
+    {%- for key in ['area_id', 'device_id', 'entity_id'] %}
+      {%- set items = lights_target.get(key, [])  %}
+      {%- if items %}
+        {%- set items = [ items ] if items is string else items %}
+        {%- set filter = key.split('_') | first %}
+        {%- set items = items if filter == 'entity' else items | map(filter ~ '_entities') | sum(start=[]) %}
+        {%- set ns.entity_ids = ns.entity_ids + [ items ] %}
+      {%- endif %}
+    {%- endfor %}
+    {{ ns.entity_ids | sum(start=[]) }}
+
 trigger:
-  - platform: state
-    entity_id: !input light_target
-    from: "off"
-    to: "on"
+  - platform: template
+    value_template: "{{ is_state(presence_entity, 'off') }}"
     for:
-      seconds: !input no_presence_wait
-  - platform: state
-    entity_id: !input presence_entity
-    from: "on"
-    to: "off"
+      seconds: !input input_no_presence_wait
+  - platform: template
+    value_template: "{{ is_state(light_target, 'on') }}"
     for:
-      seconds: !input no_presence_wait
+      seconds: !input input_no_presence_wait
 
 condition:
-  - condition: state
-    entity_id: !input presence_entity
-    state: "off"
-  - condition: state
-    entity_id: !input light_target
-    state: "on"
+  - condition: template
+    value_template: "{{ is_state(presence_entity, 'off') }}"
+  - condition: template
+    value_template: "{{ is_state(light_target, 'on') }}"
 
 action:
-  - service: light.turn_off
-    target:
-      entity_id: !input light_target
+  - variables:
+      debug: "{{ lights_target }}"
+  - variables:
+      debug1: "{{ light_entities }}"
+  # - service: light.turn_off
+  #   target:
+  #     entity_id: !input input_light_target
