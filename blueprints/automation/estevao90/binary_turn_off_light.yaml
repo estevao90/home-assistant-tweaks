@@ -42,17 +42,8 @@ trigger_variables:
   lights_target: !input input_lights_target
   presence_entity: !input input_presence_entity
   light_entities: >-
-    {%- set ns = namespace(entity_ids=[]) %}
-    {%- for key in ['area_id', 'device_id', 'entity_id'] %}
-      {%- set items = lights_target.get(key, [])  %}
-      {%- if items %}
-        {%- set items = [ items ] if items is string else items %}
-        {%- set filter = key.split('_') | first %}
-        {%- set items = items if filter == 'entity' else items | map(filter ~ '_entities') | sum(start=[]) %}
-        {%- set ns.entity_ids = ns.entity_ids + [ items ] %}
-      {%- endif %}
-    {%- endfor %}
-    {{ ns.entity_ids | sum(start=[]) }}
+    {% from 'utils.jinja' import target_to_entities %}
+    {{ target_to_entities(lights_target) | select('light') }}
 
 trigger:
   - platform: template

@@ -1,0 +1,22 @@
+{% macro target_to_entities(target) %}
+{%- set ns = namespace(entities=[]) %}
+{%- if target is mapping %}
+    {%- set floor_ids = target.get('floor_id', []) %}
+    {%- if floor_ids %}
+        {%- set floor_ids = [ floor_ids ] if floor_ids is string else floor_ids %}
+        {%- for floor_id in floor_ids %}
+            {%- set ns.entities = ns.entities + [ floor_areas(floor_id) | map('area_entities') | sum(start=[]) ] %}
+        {%- endfor %}
+    {%- endif %}
+    {%- for key in ['area_id', 'device_id', 'entity_id'] %}
+        {%- set items = target.get(key, []) %}
+        {%- if items %}
+            {%- set items = [ items ] if items is string else items %}
+            {%- set filter = key.split('_') | first %}
+            {%- set items = items if filter == 'entity' else items | map(filter ~ '_entities') | sum(start=[]) %}
+            {%- set ns.entities = ns.entities + [ items ] %}
+        {%- endif %}
+    {%- endfor %}
+{%- endif %}
+{{ ns.entities | sum(start=[]) | unique | list }}
+{% endmacro %}
