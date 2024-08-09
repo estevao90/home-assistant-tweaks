@@ -1,4 +1,4 @@
-{% macro target_to_entities(target) %}
+{% macro target_to_entities(target, regex_filter) %}
 {%- set ns = namespace(entities=[]) %}
 {%- if target is mapping %}
     {%- set floor_ids = target.get('floor_id', []) %}
@@ -18,5 +18,9 @@
         {%- endif %}
     {%- endfor %}
 {%- endif %}
-{{ ns.entities | sum(start=[]) | unique | list }}
+{%- set ns.entities = ns.entities | sum(start=[]) %}
+{%- if regex_filter %}
+    {%- set ns.entities = ns.entities | select('match', regex_filter) %}
+{%- endif %}
+{{ ns.entities | unique | list }}
 {% endmacro %}
