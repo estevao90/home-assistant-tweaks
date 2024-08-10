@@ -1,0 +1,58 @@
+blueprint:
+  name: Binary turns off lights
+  description: Turns off a set of lights when presence is not detected.
+  domain: automation
+  source_url: https://github.com/estevao90/home-assistant-tweaks
+  author: Estevão Costa
+  input:
+    input_presence_entity:
+      name: Presence Sensor
+      selector:
+        entity:
+          filter:
+            device_class: presence
+            domain: binary_sensor
+    input_lights_target:
+      name: Lights
+      selector:
+        target:
+          entity:
+            domain: light
+    input_no_presence_wait:
+      name: Wait time
+      description: Time to leave the light on after last presence is detected.
+      default: 240
+      selector:
+        number:
+          min: 0
+          max: 3600
+          unit_of_measurement: seconds
+
+mode: single
+
+trigger_variables:
+  presence_entity: !input input_presence_entity
+  lights_target: !input input_lights_target
+  lights_entities: >-
+    {% from 'utils.jinja' import target_to_entities %}
+    {{ target_to_entities(lights_target, 'light') }}
+
+trigger:
+  - platform: template
+    value_template: "{{ is_state(presence_entity, 'off') }}"
+    for:
+      seconds: !input input_no_presence_wait
+  - platform: template
+    value_template: "{{  lights_entities | select('is_state', 'on') | list | count > 0 }}"
+    for:
+      seconds: !input input_no_presence_wait
+
+condition:
+  - condition: template
+    value_template: "{{ is_state(presence_entity, 'off') }}"
+  - condition: template
+    value_template: "{{  lights_entities | select('is_state', 'on') | list | count > 0 }}"
+
+action:
+  - service: light.turn_off
+    target: "{{ lights_target }}"
