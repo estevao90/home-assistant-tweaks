@@ -1,6 +1,6 @@
 blueprint:
-  name: Binary turns off light
-  description: Turns off the light when presence is not detected.
+  name: Binary turns off lights
+  description: Turns off a set of lights when presence is not detected.
   domain: automation
   source_url: https://github.com/estevao90/home-assistant-tweaks
   author: Estevão Costa
@@ -12,13 +12,6 @@ blueprint:
           filter:
             device_class: presence
             domain: binary_sensor
-    # TODO: Support multiple lights
-    input_light_target:
-      name: Light
-      selector:
-        entity:
-          filter:
-            domain: light
     input_lights_target:
       name: Lights
       selector:
@@ -38,12 +31,11 @@ blueprint:
 mode: single
 
 trigger_variables:
-  light_target: !input input_light_target
-  lights_target: !input input_lights_target
   presence_entity: !input input_presence_entity
-  light_entities: >-
+  lights_target: !input input_lights_target
+  lights_entities: >-
     {% from 'utils.jinja' import target_to_entities %}
-    {{ target_to_entities(lights_target) | select('light') }}
+    {{ target_to_entities(lights_target, 'light') }}
 
 trigger:
   - platform: template
@@ -51,7 +43,7 @@ trigger:
     for:
       seconds: !input input_no_presence_wait
   - platform: template
-    value_template: "{{ is_state(light_target, 'on') }}"
+    value_template: "{{  lights_entities | select('is_state', 'on') | list | count > 0 }}"
     for:
       seconds: !input input_no_presence_wait
 
@@ -59,13 +51,8 @@ condition:
   - condition: template
     value_template: "{{ is_state(presence_entity, 'off') }}"
   - condition: template
-    value_template: "{{ is_state(light_target, 'on') }}"
+    value_template: "{{  lights_entities | select('is_state', 'on') | list | count > 0 }}"
 
 action:
-  - variables:
-      debug: "{{ lights_target }}"
-  - variables:
-      debug1: "{{ light_entities }}"
-  # - service: light.turn_off
-  #   target:
-  #     entity_id: !input input_light_target
+  - service: light.turn_off
+    target: "{{ lights_target }}"
