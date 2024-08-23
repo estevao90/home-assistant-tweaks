@@ -1,0 +1,10 @@
+input_number:
+  energy_price:
+    icon: mdi:currency-brl
+    name: Energy price
+    initial: 0
+    min: 0
+    max: 100
+    step: 0.01
+    unit_of_measurement: "R$/kWh"
+    mode: box
