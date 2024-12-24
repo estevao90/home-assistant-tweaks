@@ -5,6 +5,10 @@ default_config:
 logger:
   default: warning
 
+# Configurações do registro de log
+recorder:
+  commit_interval: 30
+
 # Load frontend themes from the themes folder
 frontend:
   themes: !include_dir_merge_named themes
@@ -13,6 +17,8 @@ automation: !include automations.yaml
 
 script: !include scripts.yaml
 script manual: !include_dir_named scripts/
+
+scene: !include scenes.yaml
 
 homeassistant:
   # Load packages
