@@ -28,34 +28,34 @@ const definition = {
     return { l1: 1, l2: 1, l3: 1, l4: 1, l5: 1, l6: 1 };
   },
   configure: async (device, coordinatorEndpoint) => {
-    // try {
-    //   if (device.getEndpoint(1))
-    //     await reporting.bind(device.getEndpoint(1), coordinatorEndpoint, [
-    //       "genOnOff",
-    //     ]);
-    //   if (device.getEndpoint(2))
-    //     await reporting.bind(device.getEndpoint(2), coordinatorEndpoint, [
-    //       "genOnOff",
-    //     ]);
-    //   if (device.getEndpoint(3))
-    //     await reporting.bind(device.getEndpoint(3), coordinatorEndpoint, [
-    //       "genOnOff",
-    //     ]);
-    //   if (device.getEndpoint(4))
-    //     await reporting.bind(device.getEndpoint(4), coordinatorEndpoint, [
-    //       "genOnOff",
-    //     ]);
-    //   if (device.getEndpoint(5))
-    //     await reporting.bind(device.getEndpoint(5), coordinatorEndpoint, [
-    //       "genOnOff",
-    //     ]);
-    //   if (device.getEndpoint(6))
-    //     await reporting.bind(device.getEndpoint(6), coordinatorEndpoint, [
-    //       "genOnOff",
-    //     ]);
-    // } catch (error) {
-    //   // It may fail, but the device will still work.
-    // }
+    try {
+      if (device.getEndpoint(1))
+        await reporting.bind(device.getEndpoint(1), coordinatorEndpoint, [
+          "genOnOff",
+        ]);
+      if (device.getEndpoint(2))
+        await reporting.bind(device.getEndpoint(2), coordinatorEndpoint, [
+          "genOnOff",
+        ]);
+      if (device.getEndpoint(3))
+        await reporting.bind(device.getEndpoint(3), coordinatorEndpoint, [
+          "genOnOff",
+        ]);
+      if (device.getEndpoint(4))
+        await reporting.bind(device.getEndpoint(4), coordinatorEndpoint, [
+          "genOnOff",
+        ]);
+      if (device.getEndpoint(5))
+        await reporting.bind(device.getEndpoint(5), coordinatorEndpoint, [
+          "genOnOff",
+        ]);
+      if (device.getEndpoint(6))
+        await reporting.bind(device.getEndpoint(6), coordinatorEndpoint, [
+          "genOnOff",
+        ]);
+    } catch (error) {
+      // It may fail, but the device will still work.
+    }
     device.powerSource = "Mains (single phase)";
     device.save();
   },

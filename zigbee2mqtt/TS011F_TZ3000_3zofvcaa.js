@@ -24,11 +24,15 @@ const definition = {
   },
   meta: { multiEndpoint: true },
   configure: async (device, coordinatorEndpoint) => {
-    await tuya.configureMagicPacket(device, coordinatorEndpoint);
-    for (const endpointID of [1, 2, 3, 4]) {
-      const endpoint = device.getEndpoint(endpointID);
-      await reporting.bind(endpoint, coordinatorEndpoint, ["genOnOff"]);
-      await reporting.onOff(endpoint);
+    try {
+      await tuya.configureMagicPacket(device, coordinatorEndpoint);
+      for (const endpointID of [1, 2, 3, 4]) {
+        const endpoint = device.getEndpoint(endpointID);
+        await reporting.bind(endpoint, coordinatorEndpoint, ["genOnOff"]);
+        await reporting.onOff(endpoint);
+      }
+    } catch (error) {
+      // It may fail, but the device will still work.
     }
   },
 };

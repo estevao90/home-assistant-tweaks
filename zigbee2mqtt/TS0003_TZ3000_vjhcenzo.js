@@ -23,16 +23,20 @@ const definition = {
   },
   meta: { multiEndpoint: true },
   configure: async (device, coordinatorEndpoint) => {
-    await tuya.configureMagicPacket(device, coordinatorEndpoint);
-    await reporting.bind(device.getEndpoint(1), coordinatorEndpoint, [
-      "genOnOff",
-    ]);
-    await reporting.bind(device.getEndpoint(2), coordinatorEndpoint, [
-      "genOnOff",
-    ]);
-    await reporting.bind(device.getEndpoint(3), coordinatorEndpoint, [
-      "genOnOff",
-    ]);
+    try {
+      await tuya.configureMagicPacket(device, coordinatorEndpoint);
+      await reporting.bind(device.getEndpoint(1), coordinatorEndpoint, [
+        "genOnOff",
+      ]);
+      await reporting.bind(device.getEndpoint(2), coordinatorEndpoint, [
+        "genOnOff",
+      ]);
+      await reporting.bind(device.getEndpoint(3), coordinatorEndpoint, [
+        "genOnOff",
+      ]);
+    } catch (error) {
+      // It may fail, but the device will still work.
+    }
   },
 };
 module.exports = definition;
