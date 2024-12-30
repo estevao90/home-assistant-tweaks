@@ -10,7 +10,7 @@ const ea = exposes.access;
 const definition = {
   fingerprint: tuya.fingerprint("TS0003", ["_TZ3000_eqsair32"]),
   model: "TBZ26-3",
-  vendor: "Tuya",
+  vendor: "Zemismart",
   description: "3-Gang Smart Light Switch Zemismart",
   extend: [
     tuya.modernExtend.tuyaOnOff({

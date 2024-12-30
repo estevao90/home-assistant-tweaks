@@ -11,7 +11,7 @@ const ea = exposes.access;
 const definition = {
   fingerprint: tuya.fingerprint("TS0601", ["_TZE200_r731zlxk"]),
   model: "TBZ26M-6",
-  vendor: "Tuya",
+  vendor: "Zemismart",
   description: "6-Gang Smart Light Switch Zemismart",
   exposes: [
     e.switch().withEndpoint("l1").setAccess("state", ea.STATE_SET),
