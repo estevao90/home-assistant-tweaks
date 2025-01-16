@@ -27,11 +27,11 @@ blueprint:
     input_illuminance_threshold:
       name: Illuminance Threshold
       description: Maximum illuminance value where the lights should stay on.
-      default: 100
+      default: 15
       selector:
         number:
           min: 0
-          max: 1000
+          max: 100
           unit_of_measurement: lx
 
 mode: single
