@@ -33,6 +33,14 @@ blueprint:
           min: 0
           max: 100
           unit_of_measurement: lx
+    additional_conditions:
+      name: Additional conditions
+      description: |
+        Extra conditions you may want to add to this automation 
+        (Example: between sunset and sunrise).
+      default: []
+      selector:
+        condition:
 
 mode: single
 
@@ -47,6 +55,10 @@ trigger:
   - platform: numeric_state
     entity_id: !input input_illuminance_entity
     below: !input input_illuminance_threshold
+
+condition:
+  - alias: User additional conditions
+    condition: !input additional_conditions
 
 action:
   - choose:
