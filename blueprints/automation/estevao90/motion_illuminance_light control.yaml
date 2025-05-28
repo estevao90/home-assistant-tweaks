@@ -20,10 +20,24 @@ blueprint:
             device_class: illuminance
     input_lights_target:
       name: Lights
+      description: |
+        The lights that should be controlled by this automation.
+        You can select multiple lights or a light group.
       selector:
         target:
           entity:
             domain: light
+    input_lights_priority:
+      name: Priority Lights (optional)
+      description: |
+        If any of these lights are on, the target lights will be turned off.
+        Use this to prevent the automation from turning on or keeping on the target lights when other specified lights (such as a main or master light) are already active.
+        This is useful for avoiding unnecessary lighting when a higher-priority light is in use.
+      selector:
+        target:
+          entity:
+            domain: light
+      default: []
     input_illuminance_threshold:
       name: Illuminance Threshold
       description: Maximum illuminance value where the lights should stay on.
@@ -34,7 +48,7 @@ blueprint:
           max: 100
           unit_of_measurement: lx
     additional_conditions:
-      name: Additional conditions
+      name: Additional Conditions (optional)
       description: |
         Extra conditions you may want to add to this automation 
         (Example: between sunset and sunrise).
@@ -48,6 +62,10 @@ trigger_variables:
   presence_entity: !input input_presence_entity
   illuminance_entity: !input input_illuminance_entity
   illuminance_threshold: !input input_illuminance_threshold
+  lights_priority: !input input_lights_priority
+  lights_priority_entities: >-
+    {% from 'utils.jinja' import target_to_entities %}
+    {{ target_to_entities(lights_priority, 'light') }}
 
 trigger:
   - platform: state
@@ -55,6 +73,9 @@ trigger:
   - platform: numeric_state
     entity_id: !input input_illuminance_entity
     below: !input input_illuminance_threshold
+  - platform: template
+    value_template: "{{  lights_priority_entities | select('is_state', 'on') | list | count > 0 }}"
+
 
 condition:
   - alias: User additional conditions
@@ -69,6 +90,8 @@ action:
           - condition: numeric_state
             entity_id: !input input_illuminance_entity
             below: !input input_illuminance_threshold
+          - condition: template
+            value_template: "{{  lights_priority_entities | select('is_state', 'on') | list | count == 0 }}"
         sequence:
           - service: light.turn_on
             target: !input input_lights_target
