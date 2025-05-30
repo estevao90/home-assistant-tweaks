@@ -27,6 +27,17 @@ blueprint:
         target:
           entity:
             domain: light
+    input_no_presence_off_delay:
+      name: Off Delay (seconds)
+      description: |
+        Time to leave the lights on after the last presence is detected.
+        If you want the lights to turn off immediately when no presence is detected, set this value to 0.
+      default: 240
+      selector:
+        number:
+          min: 0
+          max: 600
+          unit_of_measurement: seconds
     input_lights_priority:
       name: Priority Lights (optional)
       description: |
@@ -56,7 +67,7 @@ blueprint:
       selector:
         condition:
 
-mode: single
+mode: restart
 
 trigger_variables:
   presence_entity: !input input_presence_entity
@@ -76,7 +87,6 @@ trigger:
   - platform: template
     value_template: "{{  lights_priority_entities | select('is_state', 'on') | list | count > 0 }}"
 
-
 condition:
   - alias: User additional conditions
     condition: !input additional_conditions
@@ -95,6 +105,19 @@ action:
         sequence:
           - service: light.turn_on
             target: !input input_lights_target
+      - conditions:
+          - condition: template
+            value_template: "{{  lights_priority_entities | select('is_state', 'on') | list | count > 0 }}"
+        sequence:
+          # turn off immediately if priority lights are on
+          - service: light.turn_off
+            target: !input input_lights_target
     default:
+      # If no presence is detected, turn off the lights after a delay
+      - delay:
+          seconds: !input input_no_presence_off_delay
+      - condition: state
+        entity_id: !input input_presence_entity
+        state: "off"
       - service: light.turn_off
         target: !input input_lights_target
