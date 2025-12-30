@@ -32,3 +32,19 @@
 
 {{ ns.entities | unique | list }}
 {% endmacro %}
+
+
+{% macro list_entities_from_floor(floor_id, regex_filter='', state_filter=None) %}
+{%- set area_ids = floor_areas(floor_id) -%}
+{%- set entity_ids = area_ids | map('area_entities') | sum(start=[]) -%}
+
+{%- if regex_filter %}
+    {%- set entity_ids = entity_ids | select('match', regex_filter) | list %}
+{%- endif %}
+
+{%- if state_filter %}
+    {%- set entity_ids = expand(entity_ids) | selectattr('state', 'equalto', state_filter) | map(attribute='entity_id') | list %}
+{%- endif %}
+
+{{ entity_ids | to_json }}
+{% endmacro %}
