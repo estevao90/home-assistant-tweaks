@@ -32,12 +32,22 @@ blueprint:
       description: |
         Time to leave the lights on after the last presence is detected.
         If you want the lights to turn off immediately when no presence is detected, set this value to 0.
+        Used if no helper is provided below.
       default: 240
       selector:
         number:
           min: 0
           max: 600
           unit_of_measurement: seconds
+    input_no_presence_off_delay_entity:
+      name: Off Delay Helper (optional)
+      description: |
+        Optional input_number entity.
+        If provided, this value overrides the static delay above.
+      default: ""
+      selector:
+        entity:
+          domain: input_number
     input_lights_priority:
       name: Priority Lights (optional)
       description: |
@@ -61,7 +71,7 @@ blueprint:
     additional_conditions:
       name: Additional Conditions (optional)
       description: |
-        Extra conditions you may want to add to this automation 
+        Extra conditions you may want to add to this automation.
         (Example: between sunset and sunrise).
       default: []
       selector:
@@ -78,6 +88,19 @@ trigger_variables:
     {% from 'utils.jinja' import target_to_entities %}
     {{ target_to_entities(lights_priority, 'light') }}
 
+variables:
+  static_off_delay: !input input_no_presence_off_delay
+  off_delay_helper: !input input_no_presence_off_delay_entity
+
+  off_delay: >-
+    {% if off_delay_helper
+          and off_delay_helper != ''
+          and states(off_delay_helper) not in ['unknown', 'unavailable'] %}
+      {{ states(off_delay_helper) | int(static_off_delay) }}
+    {% else %}
+      {{ static_off_delay }}
+    {% endif %}
+
 trigger:
   - platform: state
     entity_id: !input input_presence_entity
@@ -85,7 +108,8 @@ trigger:
     entity_id: !input input_illuminance_entity
     below: !input input_illuminance_threshold
   - platform: template
-    value_template: "{{  lights_priority_entities | select('is_state', 'on') | list | count > 0 }}"
+    value_template: >
+      {{ lights_priority_entities | select('is_state', 'on') | list | count > 0 }}
 
 condition:
   - alias: User additional conditions
@@ -101,21 +125,23 @@ action:
             entity_id: !input input_illuminance_entity
             below: !input input_illuminance_threshold
           - condition: template
-            value_template: "{{  lights_priority_entities | select('is_state', 'on') | list | count == 0 }}"
+            value_template: >
+              {{ lights_priority_entities | select('is_state', 'on') | list | count == 0 }}
         sequence:
           - service: light.turn_on
             target: !input input_lights_target
       - conditions:
           - condition: template
-            value_template: "{{  lights_priority_entities | select('is_state', 'on') | list | count > 0 }}"
+            value_template: >
+              {{ lights_priority_entities | select('is_state', 'on') | list | count > 0 }}
         sequence:
-          # turn off immediately if priority lights are on
+          # Turn off immediately if priority lights are on
           - service: light.turn_off
             target: !input input_lights_target
     default:
       # If no presence is detected, turn off the lights after a delay
       - delay:
-          seconds: !input input_no_presence_off_delay
+          seconds: "{{ off_delay }}"
       - condition: state
         entity_id: !input input_presence_entity
         state: "off"
