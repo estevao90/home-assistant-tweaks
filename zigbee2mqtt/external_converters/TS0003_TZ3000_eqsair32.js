@@ -1,10 +1,5 @@
-const fz = require("zigbee-herdsman-converters/converters/fromZigbee");
-const tz = require("zigbee-herdsman-converters/converters/toZigbee");
-const exposes = require("zigbee-herdsman-converters/lib/exposes");
 const reporting = require("zigbee-herdsman-converters/lib/reporting");
 const tuya = require("zigbee-herdsman-converters/lib/tuya");
-const e = exposes.presets;
-const ea = exposes.access;
 
 const definition = {
   fingerprint: tuya.fingerprint("TS0003", ["_TZ3000_eqsair32"]),
