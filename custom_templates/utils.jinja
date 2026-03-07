@@ -34,17 +34,56 @@
 {% endmacro %}
 
 
-{% macro list_entities_from_floor(floor_id, regex_filter='', state_filter=None) %}
+{% macro list_entities_from_floor(
+    floor_id,
+    domain_filter=None,
+    regex_filter='',
+    state_filter=None,
+    ignore_label=None,
+    exclude_domains=[]
+) %}
+
+{# Get all areas in the floor #}
 {%- set area_ids = floor_areas(floor_id) -%}
+
+{# Get all entities from those areas #}
 {%- set entity_ids = area_ids | map('area_entities') | sum(start=[]) -%}
 
+{# Filter by domain (fast) #}
+{%- if domain_filter %}
+    {%- set entity_ids = entity_ids
+        | select('match', '^' ~ domain_filter ~ '\.')
+        | list %}
+{%- endif %}
+
+{# Remove excluded domains #}
+{%- if exclude_domains %}
+    {%- for domain in exclude_domains %}
+        {%- set entity_ids = entity_ids
+            | reject('match', '^' ~ domain ~ '\.')
+            | list %}
+    {%- endfor %}
+{%- endif %}
+
+{# Regex filter (optional) #}
 {%- if regex_filter %}
     {%- set entity_ids = entity_ids | select('match', regex_filter) | list %}
 {%- endif %}
 
+{# Ignore label entities #}
+{%- if ignore_label %}
+    {%- set ignored = label_entities(ignore_label) %}
+    {%- set entity_ids = entity_ids | reject('in', ignored) | list %}
+{%- endif %}
+
+{# State filter (requires expand) #}
 {%- if state_filter %}
-    {%- set entity_ids = expand(entity_ids) | selectattr('state', 'equalto', state_filter) | map(attribute='entity_id') | list %}
+     {%- set entity_ids = expand(entity_ids)
+        | selectattr('state','equalto',state_filter)
+        | map(attribute='entity_id')
+        | list %}
 {%- endif %}
 
 {{ entity_ids | to_json }}
+
 {% endmacro %}
