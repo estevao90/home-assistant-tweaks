@@ -7,6 +7,7 @@ const definition = {
   vendor: "Zemismart",
   description: "3-Gang Smart Light Switch Zemismart",
   extend: [
+    tuya.clusters.addTuyaGenOnOffCluster(),
     tuya.modernExtend.tuyaOnOff({
       powerOnBehavior2: true,
       backlightModeOffOn: true,
